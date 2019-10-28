@@ -7,7 +7,8 @@ require (
 	cloud.google.com/go/storage v1.1.2 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/buildpack/libbuildpack v1.25.2
-	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.60
+	github.com/cloudfoundry/dagger v0.0.0-20191025181811-15ebd2408e87
+	github.com/cloudfoundry/dotnet-core-conf-cnb v0.0.60 // indirect
 	github.com/cloudfoundry/libcfbuildpack v1.91.0
 	github.com/creack/pty v1.1.9 // indirect
 	github.com/golang/groupcache v0.0.0-20191025150517-4a4ac3fbac33 // indirect
