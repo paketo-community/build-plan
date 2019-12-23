@@ -12,7 +12,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/cloudfoundry/dagger/utils"
-	"github.com/cloudfoundry/packit"
+	"github.com/cloudfoundry/packit/pexec"
 )
 
 const (
@@ -22,6 +22,8 @@ const (
 	DefaultBuildImage = "cloudfoundry/build:full-cnb"
 	DefaultRunImage   = "cloudfoundry/run:full-cnb"
 	TestBuilderImage  = "cloudfoundry/cnb:cflinuxfs3"
+	Cflinuxfs3Builder = "cloudfoundry/cnb:cflinuxfs3"
+	BionicBuilder     = "cloudfoundry/cnb:bionic"
 	logBufferSize     = 1024
 )
 
@@ -30,10 +32,14 @@ var (
 	stdoutMutex             sync.Mutex
 	queueIsInitialized      bool
 	queueIsInitializedMutex sync.Mutex
+	builderMap              = map[string]string{
+		"cflinuxfs3": Cflinuxfs3Builder,
+		"bionic":     BionicBuilder,
+	}
 )
 
 type Executable interface {
-	Execute(packit.Execution) (stdout, stderr string, err error)
+	Execute(pexec.Execution) (stdout, stderr string, err error)
 }
 
 type Pack struct {
@@ -44,6 +50,8 @@ type Pack struct {
 	offline    bool
 	executable Executable
 	verbose    bool
+	builder    string
+	noPull     bool
 }
 
 type PackOption func(Pack) Pack
@@ -82,6 +90,7 @@ func PackBuildNamedImageWithEnv(appImage, appDir string, env map[string]string, 
 		SetBuildpacks(buildpacks...),
 	).Build()
 }
+
 func SetImage(image string) PackOption {
 	return func(pack Pack) Pack {
 		pack.image = image
@@ -113,6 +122,7 @@ func SetBuildpacks(buildpacks ...string) PackOption {
 func SetOffline() PackOption {
 	return func(pack Pack) Pack {
 		pack.offline = true
+		pack = NoPull()(pack)
 		return pack
 	}
 }
@@ -120,6 +130,20 @@ func SetOffline() PackOption {
 func SetVerbose() PackOption {
 	return func(pack Pack) Pack {
 		pack.verbose = true
+		return pack
+	}
+}
+
+func SetBuilder(builder string) PackOption {
+	return func(pack Pack) Pack {
+		pack.builder = builder
+		return pack
+	}
+}
+
+func NoPull() PackOption {
+	return func(pack Pack) Pack {
+		pack.noPull = true
 		return pack
 	}
 }
@@ -144,7 +168,7 @@ func NewPack(dir string, options ...PackOption) Pack {
 
 	pack := Pack{
 		dir:        dir,
-		executable: packit.NewExecutable("pack", lager.NewLogger("pack")),
+		executable: pexec.NewExecutable("pack", lager.NewLogger("pack")),
 	}
 
 	for _, option := range options {
@@ -155,7 +179,12 @@ func NewPack(dir string, options ...PackOption) Pack {
 }
 
 func (p Pack) Build() (*App, error) {
-	packArgs := []string{"build", p.image, "--builder", TestBuilderImage}
+	builderImage, err := getBuilderImage(p.builder)
+	if err != nil {
+		return nil, err
+	}
+
+	packArgs := []string{"build", p.image, "--builder", builderImage}
 	for _, bp := range p.buildpacks {
 		packArgs = append(packArgs, "--buildpack", bp)
 	}
@@ -171,18 +200,22 @@ func (p Pack) Build() (*App, error) {
 		packArgs = append(packArgs, "-e", fmt.Sprintf("%s=%s", key, p.env[key]))
 	}
 
+	if p.noPull {
+		packArgs = append(packArgs, "--no-pull")
+	}
+
 	if p.offline {
 		// probably want to pull here?
 		dockerLogger := lager.NewLogger("docker")
-		dockerExec := packit.NewExecutable("docker", dockerLogger)
+		dockerExec := pexec.NewExecutable("docker", dockerLogger)
 
-		stdout, stderr, err := dockerExec.Execute(packit.Execution{
-			Args: []string{"pull", TestBuilderImage},
+		stdout, stderr, err := dockerExec.Execute(pexec.Execution{
+			Args: []string{"pull", builderImage},
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to pull %s\n with stdout %s\n stderr %s\n%s", TestBuilderImage, stdout, stderr, err.Error())
+			return nil, fmt.Errorf("failed to pull %s\n with stdout %s\n stderr %s\n%s", builderImage, stdout, stderr, err.Error())
 		}
-		packArgs = append(packArgs, "--network", "none", "--no-pull")
+		packArgs = append(packArgs, "--network", "none")
 	}
 
 	if p.verbose {
@@ -190,7 +223,7 @@ func (p Pack) Build() (*App, error) {
 	}
 
 	buildLogs := bytes.NewBuffer(nil)
-	_, _, err := p.executable.Execute(packit.Execution{
+	_, _, err = p.executable.Execute(pexec.Execution{
 		Args:   packArgs,
 		Stdout: buildLogs,
 		Stderr: buildLogs,
@@ -257,4 +290,17 @@ func printLog(log chan []byte) {
 		fmt.Print(string(line))
 		stdoutMutex.Unlock()
 	}
+}
+
+func getBuilderImage(packBuilder string) (string, error) {
+	if packBuilder == "" {
+		return Cflinuxfs3Builder, nil
+	}
+
+	val, found := builderMap[packBuilder]
+	if !found {
+		return "", fmt.Errorf("please use either 'bionic' or 'cflinuxfs3' as input keys to SetBuilder")
+	}
+
+	return val, nil
 }
