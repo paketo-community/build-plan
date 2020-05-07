@@ -1,5 +1,5 @@
 package noapp
 
 const (
-	Name = "no-app"
+	DependencyName = "no-app"
 )

@@ -1,52 +1,40 @@
 package noapp
 
 import (
-	"fmt"
+	"path/filepath"
 
 	"github.com/cloudfoundry/packit"
 )
 
-//go:generate faux --interface EnvironmentConfig --output fakes/environment_config.go
-type EnvironmentConfig interface {
-	Parse(workingDir string) (dep []string, err error)
+//go:generate faux --interface PlanParser --output fakes/plan_parser.go
+type PlanParser interface {
+	Parse(path string) ([]packit.BuildPlanRequirement, error)
 }
 
 type BuildPlanMetadata struct {
-	LayerFlags map[string]bool
+	Launch bool `toml:"launch"`
 }
 
-func Detect(environmentConfig EnvironmentConfig) packit.DetectFunc {
+func Detect(planParser PlanParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		buildPlan := packit.BuildPlan{
-			Provides: []packit.BuildPlanProvision{
-				{Name: Name},
-			},
-			Requires: []packit.BuildPlanRequirement{
-				{Name: Name},
-			},
-		}
-
-		deps, err := environmentConfig.Parse(context.WorkingDir)
+		requirements, err := planParser.Parse(filepath.Join(context.WorkingDir, "plan.toml"))
 		if err != nil {
 			return packit.DetectResult{}, err
 		}
 
-		if len(deps) < 1 {
-			return packit.DetectResult{}, fmt.Errorf("no dependencies were found in the env.toml")
+		if len(requirements) == 0 {
+			return packit.DetectResult{}, packit.Fail
 		}
 
-		for _, dep := range deps {
-			buildPlan.Requires = append(buildPlan.Requires, packit.BuildPlanRequirement{
-				Name:    dep,
-				Version: "default",
-				Metadata: BuildPlanMetadata{
-					LayerFlags: map[string]bool{"launch": true},
-				},
-			})
-		}
+		requirements = append(requirements, packit.BuildPlanRequirement{Name: DependencyName})
 
 		return packit.DetectResult{
-			Plan: buildPlan,
+			Plan: packit.BuildPlan{
+				Provides: []packit.BuildPlanProvision{
+					{Name: DependencyName},
+				},
+				Requires: requirements,
+			},
 		}, nil
 	}
 }

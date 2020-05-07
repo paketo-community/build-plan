@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	environmentParser := noapp.NewEnvironmentParser()
+	planParser := noapp.NewBuildPlanParser()
 
-	packit.Detect(noapp.Detect(environmentParser))
+	packit.Detect(noapp.Detect(planParser))
 }
