@@ -1,15 +1,16 @@
 package dagger
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"io"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 
-	"code.cloudfoundry.org/lager"
 	"github.com/buildpack/libbuildpack/logger"
 	"github.com/cloudfoundry/dagger/utils"
 	"github.com/cloudfoundry/packit/pexec"
@@ -39,7 +40,7 @@ var (
 )
 
 type Executable interface {
-	Execute(pexec.Execution) (stdout, stderr string, err error)
+	Execute(pexec.Execution) error
 }
 
 type Pack struct {
@@ -168,7 +169,7 @@ func NewPack(dir string, options ...PackOption) Pack {
 
 	pack := Pack{
 		dir:        dir,
-		executable: pexec.NewExecutable("pack", lager.NewLogger("pack")),
+		executable: pexec.NewExecutable("pack"),
 	}
 
 	for _, option := range options {
@@ -205,12 +206,14 @@ func (p Pack) Build() (*App, error) {
 	}
 
 	if p.offline {
-		// probably want to pull here?
-		dockerLogger := lager.NewLogger("docker")
-		dockerExec := pexec.NewExecutable("docker", dockerLogger)
+		dockerExec := pexec.NewExecutable("docker")
 
-		stdout, stderr, err := dockerExec.Execute(pexec.Execution{
-			Args: []string{"pull", builderImage},
+		stdout := bytes.NewBuffer(nil)
+		stderr := bytes.NewBuffer(nil)
+		err := dockerExec.Execute(pexec.Execution{
+			Args:   []string{"pull", builderImage},
+			Stdout: stdout,
+			Stderr: stderr,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to pull %s\n with stdout %s\n stderr %s\n%s", builderImage, stdout, stderr, err.Error())
@@ -223,7 +226,7 @@ func (p Pack) Build() (*App, error) {
 	}
 
 	buildLogs := bytes.NewBuffer(nil)
-	_, _, err = p.executable.Execute(pexec.Execution{
+	err = p.executable.Execute(pexec.Execution{
 		Args:   packArgs,
 		Stdout: buildLogs,
 		Stderr: buildLogs,
@@ -231,7 +234,12 @@ func (p Pack) Build() (*App, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to pack build with output: %s\n %s\n", buildLogs, err.Error())
+		output := &strings.Builder{}
+		printErr := printBufferSafely(buildLogs, output)
+		if printErr != nil {
+			return nil, printErr
+		}
+		return nil, fmt.Errorf("failed to pack build with output:\n%s\n--> error message: %w", output, err)
 	}
 
 	sum := sha256.Sum256([]byte(fmt.Sprintf("index.docker.io/library/%s:latest", p.image))) //This is how pack makes cache image names
@@ -239,6 +247,20 @@ func (p Pack) Build() (*App, error) {
 
 	app := NewApp(p.dir, p.image, cacheImage, buildLogs, make(map[string]string))
 	return &app, nil
+}
+
+func printBufferSafely(src io.Reader, dst io.Writer) error {
+	var err error
+	for err == nil {
+		_, err = io.CopyN(dst, src, bufio.MaxScanTokenSize-1024)
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		fmt.Fprintln(dst)
+	}
+
+	return nil
 }
 
 type chanWriter struct {

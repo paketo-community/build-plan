@@ -1,37 +1,77 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
+set -o pipefail
 
-cd "$( dirname "${BASH_SOURCE[0]}" )/.."
+readonly PROGDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly BUILDPACKDIR="$(cd "${PROGDIR}/.." && pwd)"
 
-if [[ ! -d integration ]]; then
-    echo -e "\n\033[0;31m** WARNING  No Integration tests **\033[0m"
-    exit 0
-fi
+# shellcheck source=.util/tools.sh
+source "${PROGDIR}/.util/tools.sh"
 
-PACK_VERSION=${PACK_VERSION:-""}
-source scripts/install_tools.sh "$PACK_VERSION"
+# shellcheck source=.util/print.sh
+source "${PROGDIR}/.util/print.sh"
 
-export CNB_BUILD_IMAGE=${CNB_BUILD_IMAGE:-cloudfoundry/build:full-cnb}
-export CNB_RUN_IMAGE=${CNB_RUN_IMAGE:-cloudfoundry/run:full-cnb}
+# shellcheck source=.util/git.sh
+source "${PROGDIR}/.util/git.sh"
 
-# Always pull latest images
-# Most helpful for local testing consistency with CI (which would already pull the latest)
-docker pull "$CNB_BUILD_IMAGE"
-docker pull "$CNB_RUN_IMAGE"
+function main() {
+    if [[ ! -d "${BUILDPACKDIR}/integration" ]]; then
+        util::print::warn "** WARNING  No Integration tests **"
+    fi
 
-# Get GIT_TOKEN for github rate limiting
-GIT_TOKEN=${GIT_TOKEN:-"$(lpass show Shared-CF\ Buildpacks/concourse-private.yml | grep buildpacks-github-token | cut -d ' ' -f 2)"}
-export GIT_TOKEN
+    tools::install
+    images::pull
+    token::fetch
+    tests::run
+}
 
-echo "Run Buildpack Runtime Integration Tests"
-set +e
-GOMAXPROCS=4 go test -timeout 0 ./integration/... -v -mod=vendor -run Integration
-exit_code=$?
+function tools::install() {
+    util::tools::pack::install \
+        --directory "${BUILDPACKDIR}/.bin" \
+        --version "latest"
 
-if [[ "$exit_code" != "0" ]]; then
-    echo -e "\n\033[0;31m** GO Test Failed **\033[0m"
-else
-    echo -e "\n\033[0;32m** GO Test Succeeded **\033[0m"
-fi
+    if [[ -f "${BUILDPACKDIR}/.packit" ]]; then
+        util::tools::jam::install \
+            --directory "${BUILDPACKDIR}/.bin"
 
-exit "$exit_code"
+    else
+        util::tools::packager::install \
+            --directory "${BUILDPACKDIR}/.bin"
+    fi
+}
+
+function images::pull() {
+    util::print::title "Pulling build image..."
+    docker pull "${CNB_BUILD_IMAGE:=gcr.io/paketo-buildpacks/build:full-cnb-cf}"
+
+    util::print::title "Pulling run image..."
+    docker pull "${CNB_RUN_IMAGE:=gcr.io/paketo-buildpacks/run:full-cnb-cf}"
+
+    util::print::title "Pulling cflinuxfs3 builder image..."
+    docker pull "${CNB_BUILDER_IMAGE:=gcr.io/paketo-buildpacks/builder:cflinuxfs3}"
+
+    export CNB_BUILD_IMAGE
+    export CNB_RUN_IMAGE
+    export CNB_BUILDER_IMAGE
+
+    util::print::title "Setting default pack builder image..."
+    pack set-default-builder "${CNB_BUILDER_IMAGE}"
+}
+
+function token::fetch() {
+    GIT_TOKEN="$(util::git::token::fetch)"
+    export GIT_TOKEN
+}
+
+function tests::run() {
+    util::print::title "Run Buildpack Runtime Integration Tests"
+    pushd "${BUILDPACKDIR}" > /dev/null
+        if GOMAXPROCS=4 go test -timeout 0 ./integration/... -v -mod=vendor -run Integration; then
+            util::print::success "** GO Test Succeeded **"
+        else
+            util::print::error "** GO Test Failed **"
+        fi
+    popd > /dev/null
+}
+
+main "${@:-}"

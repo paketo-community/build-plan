@@ -3,14 +3,15 @@ package noapp_test
 import (
 	"errors"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/cloudfoundry/no-app-cnb/noapp"
 	"github.com/cloudfoundry/no-app-cnb/noapp/fakes"
 	"github.com/cloudfoundry/packit"
+	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"
-	"github.com/sclevine/spec"
 )
 
 func testDetect(t *testing.T, context spec.G, it spec.S) {
@@ -18,8 +19,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		Expect     = NewWithT(t).Expect
 		workingDir string
 
-		environmentConfig *fakes.EnvironmentConfig
-		detect            packit.DetectFunc
+		planParser *fakes.PlanParser
+		detect     packit.DetectFunc
 	)
 
 	it.Before(func() {
@@ -27,16 +28,30 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		workingDir, err = ioutil.TempDir("", "workingDir")
 		Expect(err).NotTo(HaveOccurred())
 
-		environmentConfig = &fakes.EnvironmentConfig{}
+		planParser = &fakes.PlanParser{}
 
-		detect = noapp.Detect(environmentConfig)
+		detect = noapp.Detect(planParser)
 	})
 
-	context("there is a env.toml in the app dir", func() {
-		context("there are deps in the env.toml", func() {
+	context("there is a plan.toml in the app dir", func() {
+		context("there are requirements in the plan.toml", func() {
 			it.Before(func() {
-				environmentConfig.ParseCall.Returns.Deps = []string{"python", "ruby"}
+				planParser.ParseCall.Returns.BuildPlanRequirementSlice = []packit.BuildPlanRequirement{
+					{
+						Name: "python",
+						Metadata: map[string]interface{}{
+							"launch": true,
+						},
+					},
+					{
+						Name: "ruby",
+						Metadata: map[string]interface{}{
+							"build": true,
+						},
+					},
+				}
 			})
+
 			it("passes detection and has those deps in its final buildplan", func() {
 				result, err := detect(packit.DetectContext{
 					WorkingDir: workingDir,
@@ -44,34 +59,37 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result.Plan).To(Equal(packit.BuildPlan{
 					Provides: []packit.BuildPlanProvision{
-						{Name: noapp.Name},
+						{Name: "no-app"},
 					},
 					Requires: []packit.BuildPlanRequirement{
 						{
-							Name: noapp.Name,
-						}, {
-							Name:    "python",
-							Version: "default",
-							Metadata: noapp.BuildPlanMetadata{
-								LayerFlags: map[string]bool{"launch": true},
+							Name: "python",
+							Metadata: map[string]interface{}{
+								"launch": true,
 							},
-						}, {
-							Name:    "ruby",
-							Version: "default",
-							Metadata: noapp.BuildPlanMetadata{
-								LayerFlags: map[string]bool{"launch": true},
+						},
+						{
+							Name: "ruby",
+							Metadata: map[string]interface{}{
+								"build": true,
 							},
+						},
+						{
+							Name: "no-app",
 						},
 					},
 				}))
+
+				Expect(planParser.ParseCall.Receives.Path).To(Equal(filepath.Join(workingDir, "plan.toml")))
 			})
 		})
 
 		context("failure cases", func() {
-			context("when the parse fails", func() {
+			context("when the plan parsing fails", func() {
 				it.Before(func() {
-					environmentConfig.ParseCall.Returns.Err = errors.New("some parsing error")
+					planParser.ParseCall.Returns.Error = errors.New("some parsing error")
 				})
+
 				it("returns an error", func() {
 					_, err := detect(packit.DetectContext{
 						WorkingDir: workingDir,
@@ -80,22 +98,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				})
 			})
 
-			context("there are no dep in the env.toml", func() {
-				it("returns an error", func() {
+			context("there are no requirements in the plan.toml", func() {
+				it("fails detection", func() {
 					_, err := detect(packit.DetectContext{
 						WorkingDir: workingDir,
 					})
-					Expect(err).To(MatchError("no dependencies were found in the env.toml"))
+
+					Expect(err).To(MatchError(packit.Fail))
 				})
 			})
 		})
 	})
-
-	// when("there is no env.toml in the app dir", func() {
-	// 	it("fails detection", func() {
-	// 		code, err := runDetect(factory.Detect)
-	// 		Expect(err).NotTo(HaveOccurred())
-	// 		Expect(code).To(Equal(detect.FailStatusCode))
-	// 	})
-	// })
 }
