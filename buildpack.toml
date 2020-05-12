@@ -1,12 +1,12 @@
 api = "0.2"
 
 [buildpack]
-id = "org.cloudfoundry.no-app"
-name = "No App Buildpack"
+id = "ForestEckhardt/build-plan"
+name = "Build Plan Buildpack"
 version = "{{ .Version }}"
 
 [metadata]
-include_files = ["bin/build","bin/detect","buildpack.toml"]
+include_files = ["bin/run", "bin/build","bin/detect","buildpack.toml"]
 pre_package = "./scripts/build.sh"
 
 [[stacks]]

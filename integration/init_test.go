@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/dagger"
-	"github.com/cloudfoundry/occam"
+	"github.com/paketo-buildpacks/occam"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
@@ -34,8 +34,8 @@ func TestIntegration(t *testing.T) {
 	buildpack = fmt.Sprintf("%s.tgz", buildpack)
 
 	defer func() {
-		dagger.DeleteBuildpack(buildpack)
-		dagger.DeleteBuildpack(pythonRuntimeBuildpack)
+		Expect(dagger.DeleteBuildpack(buildpack)).To(Succeed())
+		Expect(dagger.DeleteBuildpack(pythonRuntimeBuildpack)).To(Succeed())
 	}()
 
 	SetDefaultEventuallyTimeout(10 * time.Second)
