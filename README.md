@@ -15,9 +15,6 @@ supply another value as the first argument to `package.sh`.
 ## `plan.toml`
 
 ```toml
-[[provides]]
-name = "<dependency name>"
-
 [[requires]]
 name = "<dependency name>"
 version = "<dependency version>"
