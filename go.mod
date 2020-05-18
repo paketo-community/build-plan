@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.4.1 // indirect
 	github.com/onsi/gomega v1.10.0
 	github.com/paketo-buildpacks/occam v0.0.4
-	github.com/paketo-buildpacks/packit v0.0.8
+	github.com/paketo-buildpacks/packit v0.0.10
 	github.com/sclevine/spec v1.4.0
 	golang.org/x/net v0.0.0-20200505041828-1ed23360d12c // indirect
 	google.golang.org/appengine v1.6.6 // indirect

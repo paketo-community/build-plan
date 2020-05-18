@@ -11,6 +11,6 @@ func TestUnitBuildPlan(t *testing.T) {
 	suite := spec.New("build-plan", spec.Report(report.Terminal{}))
 	suite("Build", testBuild)
 	suite("Detect", testDetect)
-	suite("EnvironmentParser", testEnvironmentParser)
+	suite("BuildPlanParser", testBuildPlanParser)
 	suite.Run(t)
 }

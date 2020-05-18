@@ -13,7 +13,7 @@ import (
 	"github.com/sclevine/spec"
 )
 
-func testEnvironmentParser(t *testing.T, context spec.G, it spec.S) {
+func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect     = NewWithT(t).Expect
 		workingDir string
