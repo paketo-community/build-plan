@@ -14,14 +14,15 @@ type PlanParser struct {
 			Path string
 		}
 		Returns struct {
-			BuildPlanRequirementSlice []packit.BuildPlanRequirement
-			Error                     error
+			Requirements   []packit.BuildPlanRequirement
+			OrRequirements []packit.BuildPlanRequirement
+			Err            error
 		}
-		Stub func(string) ([]packit.BuildPlanRequirement, error)
+		Stub func(string) ([]packit.BuildPlanRequirement, []packit.BuildPlanRequirement, error)
 	}
 }
 
-func (f *PlanParser) Parse(param1 string) ([]packit.BuildPlanRequirement, error) {
+func (f *PlanParser) Parse(param1 string) ([]packit.BuildPlanRequirement, []packit.BuildPlanRequirement, error) {
 	f.ParseCall.Lock()
 	defer f.ParseCall.Unlock()
 	f.ParseCall.CallCount++
@@ -29,5 +30,5 @@ func (f *PlanParser) Parse(param1 string) ([]packit.BuildPlanRequirement, error)
 	if f.ParseCall.Stub != nil {
 		return f.ParseCall.Stub(param1)
 	}
-	return f.ParseCall.Returns.BuildPlanRequirementSlice, f.ParseCall.Returns.Error
+	return f.ParseCall.Returns.Requirements, f.ParseCall.Returns.OrRequirements, f.ParseCall.Returns.Err
 }

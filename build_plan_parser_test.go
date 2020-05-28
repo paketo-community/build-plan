@@ -47,11 +47,19 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 
 	[requires.metadata]
 	  launch = true
+
+[[or]]
+
+[[or.requires]]
+	name = "node"
+
+	[or.requires.metadata]
+		launch = true
 `), os.ModePerm)).To(Succeed())
 		})
 
 		it("returns a list of strings", func() {
-			requirements, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
+			requirements, orRequirements, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(requirements).To(Equal([]packit.BuildPlanRequirement{
 				{
@@ -67,6 +75,15 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 					},
 				},
 			}))
+
+			Expect(orRequirements).To(Equal([]packit.BuildPlanRequirement{
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"launch": true,
+					},
+				},
+			}))
 		})
 
 		context("there is no plan.toml", func() {
@@ -75,9 +92,10 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it("returns an empty list of requirements", func() {
-				requirements, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
+				requirements, orRequirements, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(requirements).To(BeEmpty())
+				Expect(orRequirements).To(BeEmpty())
 			})
 		})
 
@@ -88,7 +106,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 				})
 
 				it("returns an error", func() {
-					_, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
+					_, _, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
 					Expect(err).To(MatchError(ContainSubstring("failed to read plan.toml:")))
 					Expect(err).To(MatchError(ContainSubstring("permission denied")))
 				})
@@ -100,7 +118,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 				})
 
 				it("returns an error", func() {
-					_, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
+					_, _, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
 					Expect(err).To(MatchError(ContainSubstring("failed to decode plan.toml:")))
 					Expect(err).To(MatchError(ContainSubstring("bare keys cannot contain '%'")))
 				})

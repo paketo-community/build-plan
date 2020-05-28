@@ -39,7 +39,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 		Expect(docker.Volume.Remove.Execute(occam.CacheVolumeNames(name))).To(Succeed())
 	})
 
-	it("should build a working OCI image for a simple app with aspnet dependencies", func() {
+	it("should build a working OCI image for with the python runtime", func() {
 		var err error
 		image, _, err = pack.WithNoColor().Build.
 			WithNoPull().

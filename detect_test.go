@@ -36,7 +36,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 	context("there is a plan.toml in the app dir", func() {
 		context("there are requirements in the plan.toml", func() {
 			it.Before(func() {
-				planParser.ParseCall.Returns.BuildPlanRequirementSlice = []packit.BuildPlanRequirement{
+				planParser.ParseCall.Returns.Requirements = []packit.BuildPlanRequirement{
 					{
 						Name: "python",
 						Metadata: map[string]interface{}{
@@ -47,6 +47,15 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						Name: "ruby",
 						Metadata: map[string]interface{}{
 							"build": true,
+						},
+					},
+				}
+
+				planParser.ParseCall.Returns.OrRequirements = []packit.BuildPlanRequirement{
+					{
+						Name: "node",
+						Metadata: map[string]interface{}{
+							"launch": true,
 						},
 					},
 				}
@@ -72,6 +81,18 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 							},
 						},
 					},
+					Or: []packit.BuildPlan{
+						{
+							Requires: []packit.BuildPlanRequirement{
+								{
+									Name: "node",
+									Metadata: map[string]interface{}{
+										"launch": true,
+									},
+								},
+							},
+						},
+					},
 				}))
 
 				Expect(planParser.ParseCall.Receives.Path).To(Equal(filepath.Join(workingDir, "plan.toml")))
@@ -81,7 +102,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("failure cases", func() {
 			context("when the plan parsing fails", func() {
 				it.Before(func() {
-					planParser.ParseCall.Returns.Error = errors.New("some parsing error")
+					planParser.ParseCall.Returns.Err = errors.New("some parsing error")
 				})
 
 				it("returns an error", func() {
