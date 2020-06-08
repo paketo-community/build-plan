@@ -33,4 +33,3 @@ version = "<dependency version>"
 ```
 
 If you are looking for concrete definitions on what these fields do inside of `packit` you can check the documentation [here](https://godoc.org/github.com/paketo-buildpacks/packit#BuildPlan). For the definition from the Cloud Native Buildpack specification itself you can check out the documentation [here](https://godoc.org/github.com/paketo-buildpacks/packit#BuildPlan).
-To package this buildpack for consumption:
