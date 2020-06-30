@@ -1,9 +1,9 @@
-package main_test
+package buildplan_test
 
 import (
 	"testing"
 
-	main "github.com/ForestEckhardt/build-plan"
+	buildplan "github.com/ForestEckhardt/build-plan"
 	"github.com/paketo-buildpacks/packit"
 	"github.com/sclevine/spec"
 
@@ -18,7 +18,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 	)
 
 	it.Before(func() {
-		build = main.Build()
+		build = buildplan.Build()
 	})
 
 	it("sets the start command when only the runtime is used", func() {

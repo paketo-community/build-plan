@@ -1,4 +1,4 @@
-package main
+package buildplan
 
 import (
 	"path/filepath"

@@ -1,4 +1,4 @@
-package main_test
+package buildplan_test
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	main "github.com/ForestEckhardt/build-plan"
+	buildplan "github.com/ForestEckhardt/build-plan"
 	"github.com/paketo-buildpacks/packit"
 
 	. "github.com/onsi/gomega"
@@ -18,7 +18,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 		Expect     = NewWithT(t).Expect
 		workingDir string
 
-		planParser main.BuildPlanParser
+		planParser buildplan.BuildPlanParser
 	)
 
 	it.Before(func() {
@@ -26,7 +26,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 		workingDir, err = ioutil.TempDir("", "working-dir")
 		Expect(err).NotTo(HaveOccurred())
 
-		planParser = main.NewBuildPlanParser()
+		planParser = buildplan.NewBuildPlanParser()
 	})
 
 	it.After(func() {

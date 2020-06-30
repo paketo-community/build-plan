@@ -20,8 +20,6 @@ function util::tools::path::export() {
 }
 
 function util::tools::jam::install () {
-  echo "-> Installing v0.0.10 jam..."
-
   local dir
   while [[ "${#}" != 0 ]]; do
     case "${1}" in
@@ -55,7 +53,7 @@ function util::tools::jam::install () {
 
   if [[ ! -f "${dir}/jam" ]]; then
     local version
-    version="v0.0.10"
+    version="v0.0.14"
 
     util::print::title "Installing jam ${version}"
     curl "https://github.com/paketo-buildpacks/packit/releases/download/${version}/jam-${os}" \
@@ -132,6 +130,6 @@ function util::tools::packager::install () {
 
     if [[ ! -f "${dir}/packager" ]]; then
         util::print::title "Installing packager"
-        GOBIN="${dir}" go install github.com/cloudfoundry/libcfbuildpack/packager
+        GOBIN="${dir}" go get github.com/cloudfoundry/libcfbuildpack/packager
     fi
 }

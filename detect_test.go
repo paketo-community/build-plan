@@ -1,4 +1,4 @@
-package main_test
+package buildplan_test
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	main "github.com/ForestEckhardt/build-plan"
+	buildplan "github.com/ForestEckhardt/build-plan"
 	"github.com/ForestEckhardt/build-plan/fakes"
 	"github.com/paketo-buildpacks/packit"
 	"github.com/sclevine/spec"
@@ -30,7 +30,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		planParser = &fakes.PlanParser{}
 
-		detect = main.Detect(planParser)
+		detect = buildplan.Detect(planParser)
 	})
 
 	context("there is a plan.toml in the app dir", func() {

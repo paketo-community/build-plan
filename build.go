@@ -1,4 +1,4 @@
-package main
+package buildplan
 
 import (
 	"github.com/paketo-buildpacks/packit"
