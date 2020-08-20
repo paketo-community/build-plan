@@ -1,0 +1,18 @@
+[[requires]]
+  name = "python"
+
+  [requires.metadata]
+    launch = true
+
+[[requires]]
+  name = "pipenv"
+
+  [requires.metadata]
+    launch = true
+
+[[or]]
+  [[or.requires]]
+    name = "python"
+
+    [or.requires.metadata]
+      launch = true

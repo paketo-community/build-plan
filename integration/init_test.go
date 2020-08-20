@@ -1,11 +1,10 @@
 package integration_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
+	"path/filepath"
 
-	"github.com/cloudfoundry/dagger"
 	"github.com/paketo-buildpacks/occam"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -21,27 +20,25 @@ var (
 func TestIntegration(t *testing.T) {
 	Expect := NewWithT(t).Expect
 
-	root, err := dagger.FindBPRoot()
+	root, err := filepath.Abs("../")
 	Expect(err).ToNot(HaveOccurred())
 
-	buildpack, err = dagger.PackageBuildpack(root)
-	Expect(err).NotTo(HaveOccurred())
+	buildpackStore := occam.NewBuildpackStore()
 
-	pythonRuntimeBuildpack, err = dagger.GetLatestBuildpack("python-runtime-cnb")
+	buildpack, err = buildpackStore.Get.
+		WithVersion("1.2.3").
+		Execute(root)
 	Expect(err).ToNot(HaveOccurred())
 
-	// HACK: we need to fix dagger and the package.sh scripts so that this isn't required
-	buildpack = fmt.Sprintf("%s.tgz", buildpack)
-
-	defer func() {
-		Expect(dagger.DeleteBuildpack(buildpack)).To(Succeed())
-		Expect(dagger.DeleteBuildpack(pythonRuntimeBuildpack)).To(Succeed())
-	}()
+	pythonRuntimeBuildpack, err = buildpackStore.Get.
+		Execute("github.com/paketo-community/python-runtime")
+	Expect(err).ToNot(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(10 * time.Second)
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}))
 	suite("Default", testDefault, spec.Parallel())
+	suite("Or", testOr, spec.Parallel())
 	suite.Run(t)
 }
 

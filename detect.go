@@ -22,13 +22,16 @@ func Detect(planParser PlanParser) packit.DetectFunc {
 			return packit.DetectResult{}, packit.Fail
 		}
 
-		return packit.DetectResult{
-			Plan: packit.BuildPlan{
+		plan := packit.BuildPlan{
 				Requires: requirements,
-				Or: []packit.BuildPlan{
+			}
+
+		if len(orRequirements) > 0 {
+				plan.Or = []packit.BuildPlan{
 					{Requires: orRequirements},
-				},
-			},
-		}, nil
+				}
+		}
+
+		return packit.DetectResult{ Plan: plan, }, nil
 	}
 }
