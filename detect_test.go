@@ -50,6 +50,50 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 						},
 					},
 				}
+			})
+
+			it("passes detection and has those deps in its final buildplan", func() {
+				result, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result.Plan).To(Equal(packit.BuildPlan{
+					Requires: []packit.BuildPlanRequirement{
+						{
+							Name: "python",
+							Metadata: map[string]interface{}{
+								"launch": true,
+							},
+						},
+						{
+							Name: "ruby",
+							Metadata: map[string]interface{}{
+								"build": true,
+							},
+						},
+					},
+				}))
+
+				Expect(planParser.ParseCall.Receives.Path).To(Equal(filepath.Join(workingDir, "plan.toml")))
+			})
+		})
+
+		context("there are or requirements in the plan.toml", func() {
+			it.Before(func() {
+				planParser.ParseCall.Returns.Requirements = []packit.BuildPlanRequirement{
+					{
+						Name: "python",
+						Metadata: map[string]interface{}{
+							"launch": true,
+						},
+					},
+					{
+						Name: "ruby",
+						Metadata: map[string]interface{}{
+							"build": true,
+						},
+					},
+				}
 
 				planParser.ParseCall.Returns.OrRequirements = []packit.BuildPlanRequirement{
 					{
