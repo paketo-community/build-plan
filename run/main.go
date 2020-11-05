@@ -1,8 +1,8 @@
 package main
 
 import (
-	buildplan "github.com/ForestEckhardt/build-plan"
 	"github.com/paketo-buildpacks/packit"
+	buildplan "github.com/paketo-community/build-plan"
 )
 
 func main() {

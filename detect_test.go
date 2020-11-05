@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	buildplan "github.com/ForestEckhardt/build-plan"
-	"github.com/ForestEckhardt/build-plan/fakes"
 	"github.com/paketo-buildpacks/packit"
+	buildplan "github.com/paketo-community/build-plan"
+	"github.com/paketo-community/build-plan/fakes"
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"

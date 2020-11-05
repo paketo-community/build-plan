@@ -3,20 +3,17 @@
 set -eu
 set -o pipefail
 
-# shellcheck source=./print.sh
+# shellcheck source=SCRIPTDIR/print.sh
 source "$(dirname "${BASH_SOURCE[0]}")/print.sh"
 
-# shellcheck source=./git.sh
-source "$(dirname "${BASH_SOURCE[0]}")/git.sh"
-
 function util::tools::path::export() {
-    local dir
-    dir="${1}"
+  local dir
+  dir="${1}"
 
-    if ! echo "${PATH}" | grep -q "${dir}"; then
-        PATH="${dir}:$PATH"
-        export PATH
-    fi
+  if ! echo "${PATH}" | grep -q "${dir}"; then
+    PATH="${dir}:$PATH"
+    export PATH
+  fi
 }
 
 function util::tools::jam::install () {
@@ -53,7 +50,7 @@ function util::tools::jam::install () {
 
   if [[ ! -f "${dir}/jam" ]]; then
     local version
-    version="v0.2.6"
+    version="v0.3.1"
 
     util::print::title "Installing jam ${version}"
     curl "https://github.com/paketo-buildpacks/packit/releases/download/${version}/jam-${os}" \
@@ -98,7 +95,7 @@ function util::tools::pack::install() {
 
   if [[ ! -f "${dir}/pack" ]]; then
     local version
-    version="v0.12.0"
+    version="v0.14.2"
 
     util::print::title "Installing pack ${version}"
     curl "https://github.com/buildpacks/pack/releases/download/${version}/pack-${version}-${os}.tgz" \
@@ -122,6 +119,8 @@ function util::tools::packager::install () {
 
         *)
           util::print::error "unknown argument \"${1}\""
+          ;;
+
       esac
     done
 
@@ -129,7 +128,17 @@ function util::tools::packager::install () {
     util::tools::path::export "${dir}"
 
     if [[ ! -f "${dir}/packager" ]]; then
-        util::print::title "Installing packager"
-        GOBIN="${dir}" go get github.com/cloudfoundry/libcfbuildpack/packager
+      util::print::title "Installing packager"
+      GOBIN="${dir}" go get -u github.com/cloudfoundry/libcfbuildpack/packager
     fi
+}
+
+function util::tools::tests::checkfocus() {
+  testout="${1}"
+  if grep -q 'Focused: [1-9]' "${testout}"; then
+    echo "Detected Focused Test(s) - setting exit code to 197"
+    rm "${testout}"
+    util::print::success "** GO Test Succeeded **" 197
+  fi
+  rm "${testout}"
 }

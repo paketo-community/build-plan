@@ -1,13 +1,12 @@
-api = "0.2"
+api = "0.4"
 
 [buildpack]
-id = "ForestEckhardt/build-plan"
-name = "Build Plan Buildpack"
-version = "{{ .Version }}"
+id = "paketo-community/build-plan"
+name = "Paketo Build Plan Buildpack"
 
 [metadata]
-include_files = ["bin/run", "bin/build","bin/detect","buildpack.toml"]
-pre_package = "./scripts/build.sh"
+include-files = ["bin/run", "bin/build","bin/detect","buildpack.toml"]
+pre-package = "./scripts/build.sh"
 
 [[stacks]]
 id = "org.cloudfoundry.stacks.cflinuxfs3"

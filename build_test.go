@@ -3,8 +3,8 @@ package buildplan_test
 import (
 	"testing"
 
-	buildplan "github.com/ForestEckhardt/build-plan"
 	"github.com/paketo-buildpacks/packit"
+	buildplan "github.com/paketo-community/build-plan"
 	"github.com/sclevine/spec"
 
 	. "github.com/onsi/gomega"

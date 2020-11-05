@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	buildplan "github.com/ForestEckhardt/build-plan"
 	"github.com/paketo-buildpacks/packit"
+	buildplan "github.com/paketo-community/build-plan"
 
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
