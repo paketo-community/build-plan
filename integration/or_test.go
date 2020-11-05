@@ -42,7 +42,7 @@ func testOr(t *testing.T, context spec.G, it spec.S) {
 	it("should build a working OCI image for with the python runtime", func() {
 		var err error
 		image, _, err = pack.WithNoColor().Build.
-			WithNoPull().
+			WithPullPolicy("never").
 			WithBuildpacks(pythonRuntimeBuildpack, buildpack).
 			Execute(name, filepath.Join("testdata", "or"))
 		Expect(err).ToNot(HaveOccurred())
