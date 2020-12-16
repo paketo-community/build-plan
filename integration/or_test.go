@@ -47,7 +47,12 @@ func testOr(t *testing.T, context spec.G, it spec.S) {
 			Execute(name, filepath.Join("testdata", "or"))
 		Expect(err).ToNot(HaveOccurred())
 
-		container, err = docker.Container.Run.WithCommand("python --version && python -m http.server $PORT").Execute(image.ID)
+		container, err = docker.Container.Run.
+			WithEnv(map[string]string{"PORT": "8080"}).
+			WithPublish("8080").
+			WithPublishAll().
+			WithCommand("python --version && python -m http.server $PORT").
+			Execute(image.ID)
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(container).Should(BeAvailable(), ContainerLogs(container.ID))
