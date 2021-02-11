@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/onsi/gomega v1.10.5
 	github.com/paketo-buildpacks/occam v0.0.24
-	github.com/paketo-buildpacks/packit v0.6.1
+	github.com/paketo-buildpacks/packit v0.7.0
 	github.com/sclevine/spec v1.4.0
 	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 // indirect
 )
