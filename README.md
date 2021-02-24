@@ -17,7 +17,6 @@ supply another value as the first argument to `package.sh`.
 ```toml
 [[requires]]
 name = "<dependency name>"
-version = "<dependency version>"
 
 [requires.metadata]
 # buildpack-specific data
@@ -26,7 +25,6 @@ version = "<dependency version>"
 
 [[or.requires]]
 name = "<dependency name>"
-version = "<dependency version>"
 
 [or.requires.metadata]
 # buildpack-specific data
