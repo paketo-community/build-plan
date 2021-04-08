@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -41,11 +42,12 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 	it("should build a working OCI image for with the python runtime", func() {
 		var err error
-		image, _, err = pack.WithNoColor().Build.
+		var logs fmt.Stringer
+		image, logs, err = pack.WithNoColor().Build.
 			WithPullPolicy("never").
 			WithBuildpacks(pythonRuntimeBuildpack, buildpack).
 			Execute(name, filepath.Join("testdata", "python-env"))
-		Expect(err).ToNot(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred(), logs.String())
 
 		container, err = docker.Container.Run.
 			WithEnv(map[string]string{"PORT": "8080"}).
@@ -57,7 +59,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 
 		Eventually(container).Should(BeAvailable(), ContainerLogs(container.ID))
 
-		logs, err := docker.Container.Logs.Execute(container.ID)
+		logs, err = docker.Container.Logs.Execute(container.ID)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(logs).To(MatchRegexp(`Python \d+\.\d+\.\d+`))

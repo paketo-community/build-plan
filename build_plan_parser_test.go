@@ -120,7 +120,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 				it("returns an error", func() {
 					_, _, err := planParser.Parse(filepath.Join(workingDir, "plan.toml"))
 					Expect(err).To(MatchError(ContainSubstring("failed to decode plan.toml:")))
-					Expect(err).To(MatchError(ContainSubstring("bare keys cannot contain '%'")))
+					Expect(err).To(MatchError(ContainSubstring("keys cannot contain % character")))
 				})
 			})
 		})
