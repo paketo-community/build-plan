@@ -1,9 +1,9 @@
 package integration_test
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
-	"path/filepath"
 
 	"github.com/paketo-buildpacks/occam"
 	"github.com/sclevine/spec"
@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	buildpack              string
-	pythonRuntimeBuildpack string
+	buildpack        string
+	cpythonBuildpack string
 )
 
 func TestIntegration(t *testing.T) {
@@ -30,8 +30,8 @@ func TestIntegration(t *testing.T) {
 		Execute(root)
 	Expect(err).ToNot(HaveOccurred())
 
-	pythonRuntimeBuildpack, err = buildpackStore.Get.
-		Execute("github.com/paketo-community/python-runtime")
+	cpythonBuildpack, err = buildpackStore.Get.
+		Execute("github.com/paketo-community/cpython")
 	Expect(err).ToNot(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(10 * time.Second)
