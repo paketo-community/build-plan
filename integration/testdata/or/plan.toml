@@ -1,5 +1,5 @@
 [[requires]]
-  name = "python"
+  name = "cpython"
 
   [requires.metadata]
     launch = true
@@ -12,7 +12,7 @@
 
 [[or]]
   [[or.requires]]
-    name = "python"
+    name = "cpython"
 
     [or.requires.metadata]
       launch = true
