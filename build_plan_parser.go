@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BurntSushi/toml"
 	"github.com/paketo-buildpacks/packit"
+
+	toml "github.com/pelletier/go-toml"
 )
 
 type BuildPlanParser struct{}
@@ -27,7 +28,7 @@ func (p BuildPlanParser) Parse(path string) ([]packit.BuildPlanRequirement, []pa
 	defer file.Close()
 
 	var plan packit.BuildPlan
-	_, err = toml.DecodeReader(file, &plan)
+	err = toml.NewDecoder(file).Decode(&plan)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to decode plan.toml: %w", err)
 	}
