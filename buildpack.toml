@@ -12,7 +12,7 @@ api = "0.5"
   id = "org.cloudfoundry.stacks.cflinuxfs3"
 
 [[stacks]]
-id = "io.buildpacks.stacks.bionic"
+  id = "io.buildpacks.stacks.bionic"
 
 [[stacks]]
-id = "*"
+  id = "*"
