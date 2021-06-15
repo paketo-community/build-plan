@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	buildpack              string
-	pythonRuntimeBuildpack string
+	buildpack        string
+	cpythonBuildpack string
 )
 
 func TestIntegration(t *testing.T) {
@@ -30,7 +30,7 @@ func TestIntegration(t *testing.T) {
 		Execute(root)
 	Expect(err).ToNot(HaveOccurred())
 
-	pythonRuntimeBuildpack, err = buildpackStore.Get.
+	cpythonBuildpack, err = buildpackStore.Get.
 		Execute("github.com/paketo-community/cpython")
 	Expect(err).ToNot(HaveOccurred())
 

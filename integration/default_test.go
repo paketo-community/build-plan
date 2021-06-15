@@ -45,7 +45,7 @@ func testDefault(t *testing.T, context spec.G, it spec.S) {
 		var logs fmt.Stringer
 		image, logs, err = pack.WithNoColor().Build.
 			WithPullPolicy("never").
-			WithBuildpacks(pythonRuntimeBuildpack, buildpack).
+			WithBuildpacks(cpythonBuildpack, buildpack).
 			Execute(name, filepath.Join("testdata", "python-env"))
 		Expect(err).ToNot(HaveOccurred(), logs.String())
 
