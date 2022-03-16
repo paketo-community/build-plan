@@ -3,7 +3,7 @@ package buildplan
 import (
 	"path/filepath"
 
-	"github.com/paketo-buildpacks/packit"
+	"github.com/paketo-buildpacks/packit/v2"
 )
 
 //go:generate faux --interface PlanParser --output fakes/plan_parser.go

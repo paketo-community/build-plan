@@ -3,7 +3,7 @@ package buildplan_test
 import (
 	"testing"
 
-	"github.com/paketo-buildpacks/packit"
+	"github.com/paketo-buildpacks/packit/v2"
 	buildplan "github.com/paketo-community/build-plan"
 	"github.com/sclevine/spec"
 
