@@ -31,7 +31,7 @@ func TestIntegration(t *testing.T) {
 	Expect(err).ToNot(HaveOccurred())
 
 	cpythonBuildpack, err = buildpackStore.Get.
-		Execute("github.com/paketo-community/cpython")
+		Execute("github.com/paketo-buildpacks/cpython")
 	Expect(err).ToNot(HaveOccurred())
 
 	SetDefaultEventuallyTimeout(10 * time.Second)
