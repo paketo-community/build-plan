@@ -6,7 +6,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/docker/docker v20.10.21+incompatible // indirect
 	github.com/moby/term v0.0.0-20220808134915-39b0c02b01ae // indirect
-	github.com/onsi/gomega v1.25.0
+	github.com/onsi/gomega v1.26.0
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
 	github.com/opencontainers/runc v1.1.4 // indirect
 	github.com/paketo-buildpacks/occam v0.14.0
