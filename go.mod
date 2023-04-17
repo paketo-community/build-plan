@@ -3,6 +3,7 @@ module github.com/paketo-community/build-plan
 go 1.16
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/onsi/gomega v1.27.6
 	github.com/opencontainers/runc v1.1.5 // indirect
 	github.com/paketo-buildpacks/occam v0.16.0
