@@ -9,5 +9,5 @@ require (
 	github.com/paketo-buildpacks/packit/v2 v2.11.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/sclevine/spec v1.4.0
-	gotest.tools/v3 v3.4.0 // indirect
+	gotest.tools/v3 v3.5.1 // indirect
 )
