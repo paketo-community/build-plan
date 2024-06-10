@@ -2,7 +2,7 @@ package buildplan_test
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -25,7 +25,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 	it.Before(func() {
 		var err error
-		workingDir, err = ioutil.TempDir("", "workingDir")
+		workingDir, err = os.MkdirTemp("", "workingDir")
 		Expect(err).NotTo(HaveOccurred())
 
 		planParser = &fakes.PlanParser{}
