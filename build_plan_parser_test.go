@@ -1,7 +1,6 @@
 package buildplan_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,7 +22,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 
 	it.Before(func() {
 		var err error
-		workingDir, err = ioutil.TempDir("", "working-dir")
+		workingDir, err = os.MkdirTemp("", "working-dir")
 		Expect(err).NotTo(HaveOccurred())
 
 		planParser = buildplan.NewBuildPlanParser()
@@ -35,7 +34,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 
 	context("Parse", func() {
 		it.Before(func() {
-			Expect(ioutil.WriteFile(filepath.Join(workingDir, "plan.toml"), []byte(`
+			Expect(os.WriteFile(filepath.Join(workingDir, "plan.toml"), []byte(`
 [[requires]]
   name = "python"
 
@@ -114,7 +113,7 @@ func testBuildPlanParser(t *testing.T, context spec.G, it spec.S) {
 
 			context("the plan.toml is malformed", func() {
 				it.Before(func() {
-					Expect(ioutil.WriteFile(filepath.Join(workingDir, "plan.toml"), []byte("%%%"), os.ModePerm)).To(Succeed())
+					Expect(os.WriteFile(filepath.Join(workingDir, "plan.toml"), []byte("%%%"), os.ModePerm)).To(Succeed())
 				})
 
 				it("returns an error", func() {
