@@ -1,6 +1,6 @@
 module github.com/paketo-community/build-plan
 
-go 1.23.3
+go 1.23.4
 
 require (
 	github.com/onsi/gomega v1.32.0
