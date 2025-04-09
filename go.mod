@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/onsi/gomega v1.37.0
 	github.com/paketo-buildpacks/occam v0.25.0
-	github.com/paketo-buildpacks/packit/v2 v2.16.0
+	github.com/paketo-buildpacks/packit/v2 v2.17.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/sclevine/spec v1.4.0
 )
