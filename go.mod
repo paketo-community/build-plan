@@ -3,7 +3,7 @@ module github.com/paketo-community/build-plan
 go 1.24.5
 
 require (
-	github.com/onsi/gomega v1.38.1
+	github.com/onsi/gomega v1.38.2
 	github.com/paketo-buildpacks/occam v0.28.1
 	github.com/paketo-buildpacks/packit/v2 v2.23.0
 	github.com/pelletier/go-toml v1.9.5
