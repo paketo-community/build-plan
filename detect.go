@@ -1,6 +1,7 @@
 package buildplan
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/paketo-buildpacks/packit/v2"
@@ -13,7 +14,16 @@ type PlanParser interface {
 
 func Detect(planParser PlanParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		requirements, orRequirements, err := planParser.Parse(filepath.Join(context.WorkingDir, "plan.toml"))
+		planfile, ok := os.LookupEnv("BP_PLAN_FILE")
+		if !ok {
+			planfile = "plan.toml"
+		}
+
+		if planfile == "" {
+			return packit.DetectResult{}, nil
+		}
+
+		requirements, orRequirements, err := planParser.Parse(filepath.Join(context.WorkingDir, planfile))
 		if err != nil {
 			return packit.DetectResult{}, err
 		}

@@ -168,4 +168,58 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 		})
 	})
+
+	context("a different plan file has been specified", func() {
+		it.Before(func() {
+			planParser.ParseCall.Returns.Requirements = []packit.BuildPlanRequirement{{Name: "dummy"}}
+		})
+		it.After(func() {
+			os.Unsetenv("BP_PLAN_FILE")
+		})
+		context("/custom-plan.toml", func() {
+			it.Before(func() {
+				os.Setenv("BP_PLAN_FILE", "custom-plan.toml")
+			})
+
+			it("passes detection and has those deps in its final buildplan", func() {
+				_, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(planParser.ParseCall.Receives.Path).To(Equal(filepath.Join(workingDir, "custom-plan.toml")))
+			})
+		})
+
+		context("/subdir/plan.toml", func() {
+			it.Before(func() {
+				os.Setenv("BP_PLAN_FILE", "subdir/custom-plan.toml")
+			})
+
+			it("passes detection and has those deps in its final buildplan", func() {
+				_, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(planParser.ParseCall.Receives.Path).To(Equal(filepath.Join(workingDir, "subdir", "custom-plan.toml")))
+			})
+		})
+
+		context("empty string", func() {
+			it.Before(func() {
+				os.Setenv("BP_PLAN_FILE", "")
+			})
+
+			it("passes detection and has those deps in its final buildplan", func() {
+				_, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				// When BP_PLAN_FILE is set to an empty string, we skip the plan parsing.
+				Expect(planParser.ParseCall.Receives.Path).To(BeEmpty())
+			})
+		})
+	})
 }

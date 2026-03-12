@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/paketo-buildpacks/packit/v2"
 
@@ -23,14 +24,14 @@ func (p BuildPlanParser) Parse(path string) ([]packit.BuildPlanRequirement, []pa
 			return nil, nil, nil
 		}
 
-		return nil, nil, fmt.Errorf("failed to read plan.toml: %w", err)
+		return nil, nil, fmt.Errorf("failed to read %s: %w", filepath.Base(path), err)
 	}
 	defer file.Close()
 
 	var plan packit.BuildPlan
 	err = toml.NewDecoder(file).Decode(&plan)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to decode plan.toml: %w", err)
+		return nil, nil, fmt.Errorf("failed to decode %s: %w", filepath.Base(path), err)
 	}
 
 	var orRequirements []packit.BuildPlanRequirement
