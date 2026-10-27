@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -87,6 +89,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Has Compilation Action?
         id: compile-check
@@ -122,6 +126,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Make Temporary Artifact Directory
         id: make-outputdir
@@ -192,6 +198,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Download artifact files
         uses: actions/download-artifact@v4
@@ -285,11 +293,14 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Checkout Branch
         uses: paketo-buildpacks/github-config/actions/pull-request/checkout-branch@main
         with:
           branch: automation/dependencies/update-from-metadata
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Make Temporary Artifact Directory
         id: make-outputdir
@@ -348,6 +359,7 @@ jobs:
         uses: paketo-buildpacks/github-config/actions/pull-request/push-branch@main
         with:
           branch: automation/dependencies/update-from-metadata
+          token: ${{ secrets.PAKETO_BOT_GITHUB_TOKEN }}
 
       - name: Open Pull Request
         if: ${{ steps.commit.outputs.commit_sha != '' }}
